@@ -1,0 +1,6 @@
+use Test;
+use Test::Describe;
+
+pass "replace me";
+
+done-testing;
