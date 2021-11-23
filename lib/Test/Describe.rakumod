@@ -12,7 +12,6 @@ class Test::It does Callable {
             my %keys is Set = &!block.signature.params.grep(*.named).map(*.name.subst: /^\W ** 1..2/, "");
             my %all-pars = %pars.grep({ %keys{ .key } });
             &!block.(|%all-pars);
-            done-testing
         }, $!name
     }
 
