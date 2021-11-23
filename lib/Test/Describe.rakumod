@@ -11,7 +11,7 @@ class Test::It does Callable {
         subtest {
             my %keys is Set = &!block.signature.params.grep(*.named).map(*.name.subst: /^\W ** 1..2/, "");
             my %all-pars = %pars.grep({ %keys{ .key } });
-            &!block.(|%all-pars);
+            &!block.(|%all-pars, |(%pars<subject> if &!block.count));
             done-testing
         }, $!name
     }
@@ -28,7 +28,7 @@ class Test::Describe is Test::It {
     multi method CALL-ME(+[Int $first, *@rest], *%pars) {
         subtest {
             plan 1;
-            my %all-pars = |%pars, %!definitions;
+            my %all-pars = |%pars, |%!definitions;
             @!its[$first - 1].(|@rest, |%all-pars);
         }, $.name
     }
@@ -36,7 +36,7 @@ class Test::Describe is Test::It {
     multi method CALL-ME(*%pars) {
         subtest {
             plan +@!its;
-            my %all-pars = |%pars, %!definitions;
+            my %all-pars = |%pars, |%!definitions;
             do for @!its -> &it {
                 it |%all-pars
             }

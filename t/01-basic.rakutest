@@ -22,9 +22,9 @@ describe Int, {
     }
 
     describe 42, {
-        it "is not prime", -> :$subject {
-            expect($subject).to: be(42);
-            expect($subject.is-prime).to: be-false;
+        it "is not prime", {
+            .&expect.to: be(42);
+            expect(.is-prime).to: be-false;
         }
     }
 
