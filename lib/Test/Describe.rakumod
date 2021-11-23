@@ -27,9 +27,9 @@ class Test::Describe is Test::It {
 
     multi method CALL-ME(+[Int $first, *@rest], *%pars) {
         subtest {
+            plan 1;
             my %all-pars = |%pars, %!definitions;
             @!its[$first - 1].(|@rest, |%all-pars);
-            done-testing
         }, $.name
     }
 
