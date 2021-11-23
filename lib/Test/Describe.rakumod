@@ -40,7 +40,6 @@ class Test::Describe is Test::It {
             do for @!its -> &it {
                 it |%all-pars
             }
-            done-testing
         }, $.name
     }
 
@@ -114,7 +113,7 @@ class Test::Match {
 }
 
 class Test::Expect {
-    has $.value;
+    has Mu $.value;
 
     multi method to(Test::Match $test) {
         self!run-test: |.<> for $test.subs
@@ -139,6 +138,46 @@ class Test::Expect {
 
 sub expect($value) {
     Test::Expect.new: :$value
+}
+
+sub be-true {
+    my $my-obj;
+    Test::Match.new:
+        :expected(True),
+        test => -> Bool() $obj {
+            $my-obj := $obj
+        },
+        msg => -> $actual {
+            "expected to be true."
+        },
+    ;
+}
+
+sub be-false {
+    my $my-obj;
+    Test::Match.new:
+        :expected(True),
+        test => -> Bool() $obj {
+            !($my-obj = $obj)
+        },
+        msg => -> $actual {
+            "expected $my-obj to be false."
+        },
+    ;
+}
+
+sub have-method($meth-name) {
+    my $my-obj;
+    Test::Match.new:
+        :expected($meth-name),
+        test => -> $obj {
+            $my-obj = $obj;
+            so $obj.^can: $meth-name
+        },
+        msg => -> $actual {
+            "expected { $my-obj.gist } to have method called $meth-name."
+        },
+    ;
 }
 
 sub matcher(&op) {
@@ -190,16 +229,29 @@ multi change($expected is raw, $attr) {
 }
 
 sub EXPORT(--> Map()) {
-    "&MAIN"     => &MAIN,
-    "&describe" => &describe,
-    "&context"  => &describe,
-    "&it"       => &it,
-    "&define"   => &define,
     Test::EXPORT::ALL::,
-    '&expect'   => &expect,
-    '&change'   => &change,
-    '&be'       => matcher(&[===]),
-    '&be-eq'    => matcher(&[==]),
+    "&MAIN"        => &MAIN,
+    "&describe"    => &describe,
+    "&context"     => &describe,
+    "&it"          => &it,
+    "&define"      => &define,
+    "&subject"     => &define,
+    '&expect'      => &expect,
+    '&change'      => &change,
+    '&have-method' => &have-method,
+    '&be-true'     => &be-true,
+    '&be-false'    => &be-false,
+    '&be'          => matcher(&[===]),
+    '&be-eq'       => matcher(&[==]),
+    '&be-gt'       => matcher(&[>]),
+    '&be-lt'       => matcher(&[<]),
+    '&be-ge'       => matcher(&[>=]),
+    '&be-le'       => matcher(&[<=]),
+    '&be-str-eq'   => matcher(&[eq]),
+    '&be-str-gt'   => matcher(&[gt]),
+    '&be-str-lt'   => matcher(&[lt]),
+    '&be-str-ge'   => matcher(&[ge]),
+    '&be-str-le'   => matcher(&[le]),
 }
 
 =begin pod
@@ -213,6 +265,31 @@ Test::Describe - blah blah blah
 =begin code :lang<raku>
 
 use Test::Describe;
+
+describe Int, {
+    context "should have some methods", {
+        define "is-prime-example", 42;
+        define "a-code", 97;
+
+        it "should have a working is-prime", -> :$described-class, :$is-prime-example {
+            expect($described-class).to: have-method "is-prime";
+            expect($is-prime-example).to: be-false;
+        }
+
+        it "should have a working is-prime", -> :$described-class, :$a-code {
+            expect($described-class).to: have-method "is-prime";
+            expect($a-code.chr).to: be-false;
+        }
+    }
+
+    context "should work with math operators", {
+        define "one-plus-one", { 1 + 1 };
+
+        it "sum", -> &one-plus-one {
+            expect(one-plus-one).to: be-eq 2
+        }
+    }
+}
 
 =end code
 
