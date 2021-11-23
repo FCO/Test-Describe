@@ -1,77 +1,11 @@
 use Test;
+use Test::Describe::It;
+use Test::Describe::Root;
+use Test::Describe::Match;
+use Test::Describe::Expect;
+use Test::Describe::Describe;
 
-class Test::Describe {...}
-
-class Test::It does Callable {
-    has                $.name;
-    has Test::Describe $.describe is rw handles <definitions>;
-    has                &.block;
-
-    method CALL-ME(*%pars) {
-        subtest {
-            my %keys is Set = &!block.signature.params.grep(*.named).map(*.name.subst: /^\W ** 1..2/, "");
-            my %all-pars = %pars.grep({ %keys{ .key } });
-            &!block.(|%all-pars, |(%pars<subject> if &!block.count));
-            done-testing
-        }, $!name
-    }
-
-    method list(UInt $num = 1) {
-        "$num - $!name"
-    }
-}
-
-class Test::Describe is Test::It {
-    has          %.definitions;
-    has Test::It @.its;
-
-    multi method CALL-ME(+[Int $first, *@rest], *%pars) {
-        subtest {
-            plan 1;
-            my %all-pars = |%pars, |%!definitions;
-            @!its[$first - 1].(|@rest, |%all-pars);
-        }, $.name
-    }
-
-    multi method CALL-ME(*%pars) {
-        subtest {
-            plan +@!its;
-            my %all-pars = |%pars, |%!definitions;
-            do for @!its -> &it {
-                it |%all-pars
-            }
-        }, $.name
-    }
-
-    method list(UInt $num = 1) {
-        (
-            "$num - $.name",
-            @!its.kv.map(-> $i, $_ { .list: $i + 1 }).join("\n").indent(3)
-        ).join: "\n"
-    }
-}
-
-class Test::Root is Test::Describe {
-    method list {
-        @.its.kv.map(-> $i, $_ { .list: $i + 1 }).join("\n")
-    }
-
-    multi method CALL-ME(+[Int $first, *@rest], *%pars) {
-        plan 1;
-        my %all-pars = |%pars, %.definitions;
-        @.its[$first - 1].(|@rest, |%all-pars);
-    }
-
-    multi method CALL-ME(*%pars) {
-        plan +@.its;
-        my %all-pars = |%pars, %.definitions;
-        do for @.its -> &it {
-            it |%all-pars
-        }
-    }
-}
-
-my &ROOT = my $DESCRIBE = Test::Root.new;
+my &ROOT = my $DESCRIBE = Test::Describe::Root.new;
 
 multi MAIN(Bool :$list-tests! where .so) {
     say &ROOT.list
@@ -98,7 +32,7 @@ multi describe(Any $type, &block) {
 
 multi describe(Str $name, &block) {
     my $describe = $DESCRIBE;
-    $describe.its.push: $DESCRIBE = Test::Describe.new: :$name, |(:$describe with $describe);
+    $describe.its.push: $DESCRIBE = Test::Describe::Describe.new: :$name, |(:$describe with $describe);
     block;
     $DESCRIBE = $describe
 }
@@ -108,55 +42,16 @@ sub define(Str $name, \value) {
 }
 
 multi it(Str $name, &block) {
-    $DESCRIBE.its.push: Test::It.new: :$name, :&block
-}
-
-class Test::Match {
-    has             $.expected;
-    has             &.test;
-    has             &.msg = -> $actual { "expected '$!expected' but received '$actual'" }
-    has Test::Match $.child;
-
-    method and($val) {
-        $!child = $val;
-        self
-    }
-
-    method take-subs { take &!test, &!msg; .take-subs with $!child }
-    method subs      { gather { $.take-subs } }
-}
-
-class Test::Expect {
-    has Mu $.value;
-
-    multi method to(Test::Match $test) {
-        self!run-test: |.<> for $test.subs
-    }
-
-    multi method not-to(Test::Match $test) {
-        for $test.subs -> (&test, &msg) {
-            self!run-test: { not test $_ }, { "not " ~ msg $_ }
-        }
-    }
-
-    method !run-test(&test, &msg) {
-        my Bool() $ok = test $!value;
-        my $msg = msg $!value;
-        if $ok {
-            pass $msg
-        } else {
-            flunk $msg
-        }
-    }
+    $DESCRIBE.its.push: Test::Describe::It.new: :$name, :&block
 }
 
 sub expect($value) {
-    Test::Expect.new: :$value
+    Test::Describe::Expect.new: :$value
 }
 
 sub be-true {
     my $my-obj;
-    Test::Match.new:
+    Test::Describe::Match.new:
         :expected(True),
         test => -> Bool() $obj {
             $my-obj := $obj
@@ -169,7 +64,7 @@ sub be-true {
 
 sub be-false {
     my $my-obj;
-    Test::Match.new:
+    Test::Describe::Match.new:
         :expected(True),
         test => -> Bool() $obj {
             !($my-obj = $obj)
@@ -182,7 +77,7 @@ sub be-false {
 
 sub have-method($meth-name) {
     my $my-obj;
-    Test::Match.new:
+    Test::Describe::Match.new:
         :expected($meth-name),
         test => -> $obj {
             $my-obj = $obj;
@@ -196,7 +91,7 @@ sub have-method($meth-name) {
 
 sub matcher(&op) {
     sub ($expected is raw) {
-        Test::Match.new:
+        Test::Describe::Match.new:
             :$expected,
             test => -> $actual {
                 op $actual, $expected
@@ -212,7 +107,7 @@ multi change($expected is raw) {
     my $tmp;
     my $changed;
     my $result;
-    Test::Match.new:
+    Test::Describe::Match.new:
         :$expected,
         test => -> &val {
             $tmp = $expected;
@@ -229,7 +124,7 @@ multi change($expected is raw, $attr) {
     my $tmp;
     my $changed;
     my $result;
-    Test::Match.new:
+    Test::Describe::Match.new:
         :$expected,
         test => -> &val {
             $tmp = $expected."$attr"()<>;
