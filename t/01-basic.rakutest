@@ -51,7 +51,7 @@ describe Int, {
                 expect({ $a = 42 }).not-to: change $a, "is-prime"
             }
         }
-        context "has method", {
+        it "has method", {
             expect(Int).to: have-method("is-prime")
         }
     }
