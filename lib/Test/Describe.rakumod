@@ -208,7 +208,7 @@ Test::Describe is ...
 
 =head1 AUTHOR
 
- <foliveira@gocardless.com>
+ Fernando Correa de Oliveira <fernandocorrea@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 

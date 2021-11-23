@@ -45,7 +45,7 @@ Test::Describe is ...
 AUTHOR
 ======
 
-    <foliveira@gocardless.com>
+    Fernando Correa de Oliveira <fernandocorrea@gmail.com>
 
 COPYRIGHT AND LICENSE
 =====================
