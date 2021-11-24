@@ -2,9 +2,15 @@
 
 use Test::Describe;
 
+shared-example "first-example", {
+    it "testing first example", { .&expect.to: be-eq 42 }
+}
+
 describe Int, {
     define "bla", 42;
     define "ble", { 13 };
+
+    it-behaves-like "first-example", :42subject;
 
     it "ble", -> :$bla, :&ble {
         is $bla, 42;

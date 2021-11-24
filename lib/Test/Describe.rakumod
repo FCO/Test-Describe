@@ -4,8 +4,11 @@ use Test::Describe::Root;
 use Test::Describe::Match;
 use Test::Describe::Expect;
 use Test::Describe::Describe;
+use Test::Describe::MatchFunctions;
 
 my &ROOT = my $DESCRIBE = Test::Describe::Root.new;
+
+my Test::Describe::Describe %examples;
 
 multi MAIN(Bool :$list-tests! where .so) {
     say &ROOT.list
@@ -17,6 +20,18 @@ multi MAIN(+@nums) {
 
 multi MAIN() {
     ROOT
+}
+
+sub shared-example(Str $name, &block) {
+    my $describe = $DESCRIBE;
+    %examples{ $name } = $DESCRIBE = Test::Describe::Describe.new: :$name, |(:$describe with $describe);
+    block;
+    $DESCRIBE = $describe
+}
+
+sub it-behaves-like(Str $name, *%pars) {
+    my $ex = %examples{ $name };
+    $DESCRIBE.its.push: $ex.clone: :definitions(%( |$ex.definitions, |%pars ))
 }
 
 multi describe(Mu:U $type, &block) {
@@ -49,118 +64,32 @@ sub expect($value) {
     Test::Describe::Expect.new: :$value
 }
 
-sub be-true {
-    my $my-obj;
-    Test::Describe::Match.new:
-        :expected(True),
-        test => -> Bool() $obj {
-            $my-obj := $obj
-        },
-        msg => -> $actual {
-            "expected to be true."
-        },
-    ;
-}
-
-sub be-false {
-    my $my-obj;
-    Test::Describe::Match.new:
-        :expected(True),
-        test => -> Bool() $obj {
-            !($my-obj = $obj)
-        },
-        msg => -> $actual {
-            "expected $my-obj to be false."
-        },
-    ;
-}
-
-sub have-method($meth-name) {
-    my $my-obj;
-    Test::Describe::Match.new:
-        :expected($meth-name),
-        test => -> $obj {
-            $my-obj = $obj;
-            so $obj.^can: $meth-name
-        },
-        msg => -> $actual {
-            "expected { $my-obj.gist } to have method called $meth-name."
-        },
-    ;
-}
-
-sub matcher(&op) {
-    sub ($expected is raw) {
-        Test::Describe::Match.new:
-            :$expected,
-            test => -> $actual {
-                op $actual, $expected
-            },
-            msg => -> $actual {
-                "expected { &op.name }('$actual','$expected')."
-            },
-        ;
-    }
-}
-
-multi change($expected is raw) {
-    my $tmp;
-    my $changed;
-    my $result;
-    Test::Describe::Match.new:
-        :$expected,
-        test => -> &val {
-            $tmp = $expected;
-            val;
-            $changed = $expected;
-            $result = $tmp !== $changed
-        },
-        msg => -> $actual {
-            "expected to change { $expected.VAR.name } from '$tmp'{" to '$changed'" if $result }"
-        }
-}
-
-multi change($expected is raw, $attr) {
-    my $tmp;
-    my $changed;
-    my $result;
-    Test::Describe::Match.new:
-        :$expected,
-        test => -> &val {
-            $tmp = $expected."$attr"()<>;
-            val;
-            $changed = $expected."$attr"()<>;
-            $result = $tmp !== $changed;
-        },
-        msg => -> $actual {
-            "expected to change { $expected.VAR.name }.$attr from '$tmp'{" to '$changed'" if $result}"
-        }
-}
-
 sub EXPORT(--> Map()) {
     Test::EXPORT::ALL::,
-    "&MAIN"        => &MAIN,
-    "&describe"    => &describe,
-    "&context"     => &describe,
-    "&it"          => &it,
-    "&define"      => &define,
-    "&subject"     => &define,
-    '&expect'      => &expect,
-    '&change'      => &change,
-    '&have-method' => &have-method,
-    '&be-true'     => &be-true,
-    '&be-false'    => &be-false,
-    '&be'          => matcher(&[===]),
-    '&be-eq'       => matcher(&[==]),
-    '&be-gt'       => matcher(&[>]),
-    '&be-lt'       => matcher(&[<]),
-    '&be-ge'       => matcher(&[>=]),
-    '&be-le'       => matcher(&[<=]),
-    '&be-str-eq'   => matcher(&[eq]),
-    '&be-str-gt'   => matcher(&[gt]),
-    '&be-str-lt'   => matcher(&[lt]),
-    '&be-str-ge'   => matcher(&[ge]),
-    '&be-str-le'   => matcher(&[le]),
+    "&MAIN"            => &MAIN,
+    "&shared-example"  => &shared-example,
+    "&it-behaves-like" => &it-behaves-like,
+    "&describe"        => &describe,
+    "&context"         => &describe,
+    "&it"              => &it,
+    "&define"          => &define,
+    "&subject"         => &define,
+    '&expect'          => &expect,
+    '&change'          => &change,
+    '&have-method'     => &have-method,
+    '&be-true'         => &be-true,
+    '&be-false'        => &be-false,
+    '&be'              => matcher(&[===]),
+    '&be-eq'           => matcher(&[==]),
+    '&be-gt'           => matcher(&[>]),
+    '&be-lt'           => matcher(&[<]),
+    '&be-ge'           => matcher(&[>=]),
+    '&be-le'           => matcher(&[<=]),
+    '&be-str-eq'       => matcher(&[eq]),
+    '&be-str-gt'       => matcher(&[gt]),
+    '&be-str-lt'       => matcher(&[lt]),
+    '&be-str-ge'       => matcher(&[ge]),
+    '&be-str-le'       => matcher(&[le]),
 }
 
 =begin pod
