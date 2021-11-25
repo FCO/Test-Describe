@@ -70,6 +70,87 @@ describe Int, {
             test-bli
         }
     }
+
+    describe "define chain", {
+        define multiple-v => -> Str :$v, Int :$n { $v x $n }
+        define v => "bla", n => 5;
+
+        it "default", -> :$v, :$n, :&multiple-v {
+            expect($v).to: be-str-eq "bla";
+            expect($n).to: be-eq 5;
+            expect(multiple-v).to: be-str-eq "blablablablabla";
+        }
+
+        it "dynamic", -> :&multiple-v {
+            expect(multiple-v :v<ble>).to: be-str-eq "blebleblebleble";
+            expect(multiple-v :2n).to: be-str-eq "blabla";
+            expect(multiple-v :v<ble>, :2n).to: be-str-eq "bleble";
+        }
+
+        context "change v", {
+            define v => "a";
+            it -> :&multiple-v {
+                expect(multiple-v).to: be-str-eq "aaaaa";
+            }
+        }
+
+        context "change n", {
+            define n => 3;
+            it -> :&multiple-v {
+                expect(multiple-v).to: be-str-eq "blablabla";
+            }
+        }
+
+        context "change both", {
+            define v => "a", n => 3;
+            it -> :&multiple-v {
+                expect(multiple-v).to: be-str-eq "aaa";
+            }
+        }
+
+        it "default", {
+            expect($:v).to: be-str-eq "bla";
+            expect($:n).to: be-eq 5;
+            expect(&:multiple-v()).to: be-str-eq "blablablablabla";
+        }
+
+        it "dynamic", {
+            expect(&:multiple-v(:v<ble>)).to: be-str-eq "blebleblebleble";
+            expect(&:multiple-v(:2n)).to: be-str-eq "blabla";
+            expect(&:multiple-v(:v<ble>, :2n)).to: be-str-eq "bleble";
+        }
+
+        context "change v", {
+            define "v", "a";
+            it {
+                expect(&:multiple-v()).to: be-str-eq "aaaaa";
+            }
+        }
+
+        context "change n", {
+            define "n", 3;
+            it {
+                expect(&:multiple-v()).to: be-str-eq "blablabla";
+            }
+        }
+
+        context "change both", {
+            define "v", "a";
+            define "n", 3;
+            it {
+                expect(&:multiple-v()).to: be-str-eq "aaa";
+            }
+        }
+
+        context { $:v x $:n }, {
+            it {
+                .().&expect.to: be-str-eq "blablablablabla";
+                .(:v<a>).&expect.to: be-str-eq "aaaaa";
+                .(:2n).&expect.to: be-str-eq "blabla";
+                .(:v<e>, :3n).&expect.to: be-str-eq "eee";
+            }
+        }
+    }
 }
 
 sub test-bli {

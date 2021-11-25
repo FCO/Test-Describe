@@ -30,7 +30,7 @@ describe Int, {
     context "should work with math operators", {
         define "one-plus-one", { 1 + 1 };
 
-        it "sum", -> &one-plus-one {
+        it "sum", -> :&one-plus-one {
             expect(one-plus-one).to: be-eq 2
         }
     }

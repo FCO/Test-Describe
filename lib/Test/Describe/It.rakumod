@@ -1,15 +1,15 @@
 use Test;
+use Test::Describe::Helpers;
 
 class Test::Describe::It does Callable {
     has Str $.name;
     has     $.describe is rw handles <definitions>;
-    has     &.block;
+    has     &.block handles <line file>;
 
-    method CALL-ME(*%pars) {
+    method CALL-ME(*%pars) is test-assertion {
+        my $*IT = self;
         subtest {
-            my %keys is Set = &!block.signature.params.grep(*.named).map(*.name.subst: /^\W ** 1..2/, "");
-            my %all-pars = %pars.grep({ %keys{ .key } });
-            &!block.(|%all-pars, |(%pars<subject> if &!block.count));
+            call-with-filtered-params &!block, %pars;
             done-testing
         }, $!name
     }

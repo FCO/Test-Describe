@@ -35,25 +35,46 @@ sub it-behaves-like(Str $name, *%pars) {
 }
 
 multi describe(Mu:U $type, &block) {
-    $DESCRIBE.definitions<subject> = $type;
-    describe $type.^name, &block
-}
-
-multi describe(Any $type, &block) {
-    $DESCRIBE.definitions<subject> = $type;
+    subject $type;
     $DESCRIBE.definitions<described-class> = $type;
     describe $type.^name, &block
 }
 
-multi describe(Str $name, &block) {
+multi describe(Mu:D $type, &block) {
+    subject $type;
+    describe $type.^name, &block
+}
+
+multi describe(Str:D $name, &block) {
     my $describe = $DESCRIBE;
     $describe.its.push: $DESCRIBE = Test::Describe::Describe.new: :$name, |(:$describe with $describe);
     block;
     $DESCRIBE = $describe
 }
 
-sub define(Str $name, \value) {
-    $DESCRIBE.definitions{ $name } := value
+multi subject($value) {
+    subject "subject", $value
+}
+
+multi subject(Str $name, $value) {
+    define $name, $value
+}
+
+multi define(*%pars) {
+    .&define for %pars
+}
+
+multi define((Str :$key, :$value)) {
+    define $key, $value
+}
+
+multi define(Str $name, \value) {
+    $DESCRIBE.definitions{ $name } := value;
+    value
+}
+
+multi it(&block) {
+    it("", &block);
 }
 
 multi it(Str $name, &block) {
@@ -73,12 +94,14 @@ sub EXPORT(--> Map()) {
     "&context"         => &describe,
     "&it"              => &it,
     "&define"          => &define,
-    "&subject"         => &define,
+    "&subject"         => &subject,
     '&expect'          => &expect,
     '&change'          => &change,
     '&have-method'     => &have-method,
     '&be-true'         => &be-true,
     '&be-false'        => &be-false,
+    '&smart-match'     => &smart-match,
+    '&be-of-type'      => &be-of-type,
     '&be'              => matcher(&[===]),
     '&be-eq'           => matcher(&[==]),
     '&be-gt'           => matcher(&[>]),
@@ -123,7 +146,7 @@ describe Int, {
     context "should work with math operators", {
         define "one-plus-one", { 1 + 1 };
 
-        it "sum", -> &one-plus-one {
+        it "sum", -> :&one-plus-one {
             expect(one-plus-one).to: be-eq 2
         }
     }

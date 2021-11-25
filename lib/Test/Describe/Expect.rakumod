@@ -9,18 +9,24 @@ class Test::Describe::Expect {
     }
 
     multi method not-to(Test::Describe::Match $test) {
-        for $test.subs -> (&test, &msg) {
-            self!run-test: { not test $_ }, { "not " ~ msg $_ }
+        for $test.subs -> (&test, &msg, &hint?) {
+            self!run-test:
+                -> $expected { not test $expected },
+                -> $expected { "not " ~ msg $expected },
+                &hint
         }
     }
 
-    method !run-test(&test, &msg) {
+    method !run-test(&test, &msg, &hint?) {
+        die "Matching outside a it block" unless $*IT;
         my Bool() $ok = test $!value;
         my $msg = msg $!value;
         if $ok {
-            pass $msg
+            pass $msg;
         } else {
-            flunk $msg
+            flunk $msg;
+            diag "\o33[31;1mERROR on it block at: {$*IT.file}:{ $*IT.line }\o33[m";
+            diag .($!value) with &hint
         }
     }
 }

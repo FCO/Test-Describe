@@ -5,7 +5,7 @@ class Test::Describe::Describe is Test::Describe::It {
     has                    %.definitions;
     has Test::Describe::It @.its;
 
-    multi method CALL-ME(+[Int $first, *@rest], *%pars) {
+    multi method CALL-ME(+[Int $first, *@rest], *%pars) is test-assertion {
         subtest {
             plan 1;
             my %all-pars = |%pars, |%!definitions;
@@ -13,7 +13,7 @@ class Test::Describe::Describe is Test::Describe::It {
         }, $.name
     }
 
-    multi method CALL-ME(*%pars) {
+    multi method CALL-ME(*%pars) is test-assertion {
         subtest {
             plan +@!its;
             my %all-pars = |%pars, |%!definitions;

@@ -1,0 +1,12 @@
+use Test::Describe::Match::Change;
+use Test::Describe;
+
+describe Test::Describe::Match::Change, {
+    define new   => { $:described-class.new: :$:value }
+    define value => 42;
+
+    it ".new", -> :&new, :$described-class, :$value {
+        expect(new).to: be-of-type $described-class;
+        expect(new.value.()).to: be $value
+    }
+}
