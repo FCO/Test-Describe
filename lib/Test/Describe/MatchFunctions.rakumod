@@ -81,7 +81,7 @@ sub matcher(&op) is export {
                 "{ &op.name }({ $expected.&prepare-to-print }, { $actual.&prepare-to-print() })"
             }
         }
-        "expected `$exp` be true"
+        "expected `$exp` to be true"
     }
     sub ($expected is raw) {
         Test::Describe::Match.new:

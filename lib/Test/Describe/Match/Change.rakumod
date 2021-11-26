@@ -69,6 +69,7 @@ class Test::Describe::Match::Change is Test::Describe::Match {
 
     method to($to where not $!to.defined) {
         $!to = $to;
+        $!use-to = True;
         self
     }
 }

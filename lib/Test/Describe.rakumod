@@ -85,9 +85,19 @@ sub expect($value) {
     Test::Describe::Expect.new: :$value
 }
 
+sub after(&block) {
+    $DESCRIBE.after.push: &block
+}
+
+sub before(&block) {
+    $DESCRIBE.before.push: &block
+}
+
 sub EXPORT(--> Map()) {
     Test::EXPORT::ALL::,
     "&MAIN"            => &MAIN,
+    "&after"           => &after,
+    "&before"          => &before,
     "&shared-example"  => &shared-example,
     "&it-behaves-like" => &it-behaves-like,
     "&describe"        => &describe,

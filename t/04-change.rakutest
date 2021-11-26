@@ -2,11 +2,85 @@ use Test::Describe::Match::Change;
 use Test::Describe;
 
 describe Test::Describe::Match::Change, {
-    define new   => { $:described-class.new: :$:value }
-    define value => 42;
+    my $value;
+    define new         => { $:described-class.new: :$value }
+    define new-from    => { $:described-class.new(:$value).from: $:from }
+    define new-from-to => { $:described-class.new(:$value).from($:from).to: $:to }
+    define from        => 1;
+    define to          => 2;
 
-    it ".new", -> :&new, :$described-class, :$value {
+    before { $value = 1 }
+
+    it ".new", -> :&new, :$described-class {
         expect(new).to: be-of-type $described-class;
         expect(new.value.()).to: be $value
+    }
+
+    it ".new.test no change", -> :&new {
+        expect(new.test.({;})).to: be-false;
+        expect(new.msg.({;})).to: be "1 has not changed";
+    }
+
+    it ".new.test change", -> :&new {
+        expect(new.test.({ $value++ })).to: be-true;
+        expect(new.hint.({;})).to:
+            smart-match(/:s "from" ":" "1"/)
+            .and: smart-match(/:s "to" ":" "2"/)
+        ;
+    }
+
+    it ".new.from.test no change", -> :new-from(&new) {
+        expect(new.test.({;})).to: be-false;
+        expect(new.msg.({;})).to: be "1 has not changed";
+    }
+
+    it ".new.from.test change", -> :new-from(&new) {
+        expect(new.test.({ $value++ })).to: be-true;
+        expect(new.hint.({;})).to:
+            smart-match(/:s "from" ":" "1"/)
+            .and: smart-match(/:s "to" ":" "2"/)
+        ;
+    }
+
+    it ".new.from.test wrong from", -> :new-from(&new) {
+        $value++;
+        expect(new.test.({ $value++ })).to: be-false;
+        expect(new.msg.({;})).to: be "2 wasn't 1 before changing";
+        #expect(new.hint.({;})).to:
+        #    smart-match(/:s "from" ":" "2"/)
+        #    .and: smart-match(/:s "to" ":" "3"/)
+        #;
+    }
+
+    it ".new.from.to.test no change", -> :new-from-to(&new) {
+        expect(new.test.({;})).to: be-false;
+        expect(new.msg.({;})).to: be "1 has not changed";
+    }
+
+    it ".new.from.to.test change", -> :new-from-to(&new) {
+        expect(new.test.({ $value++ })).to: be-true;
+        expect(new.hint.({;})).to:
+            smart-match(/:s "from" ":" "1"/)
+            .and: smart-match(/:s "to" ":" "2"/)
+        ;
+    }
+
+    it ".new.from.to.test wrong from", -> :new-from-to(&new) {
+        $value++;
+        expect(new.test.({ $value++ })).to: be-false;
+        expect(new.msg.({;})).to: be "2 wasn't 1 before changing";
+        expect(new.hint.({;})).to:
+            smart-match(/:s "from" ":" "1"/)
+            .and: smart-match(/:s "to" ":" "2"/)
+        ;
+    }
+
+    it ".new.from.to.test wrong to", -> :new-from-to(&new) {
+        expect(new.test.({ $value += 2 })).to: be-false;
+        expect(new.msg.({;})).to: be "3 wasn't 2 after changing";
+        expect(new.hint.({;})).to:
+            smart-match(/:s "from" ":" "1"/)
+            .and: smart-match(/:s "to" ":" "2"/)
+        ;
     }
 }

@@ -1,7 +1,7 @@
 sub filter-params-for(&block, %params --> Hash()) is export {
     my @block-params = &block.signature.params;
     return %params if @block-params>>.&{ .slurpy && .name.starts-with: "%" }.any.so;
-    my %keys is Set = @block-params.grep(*.named).map(*.name.subst: /^\W+/, "");
+    my %keys is Set = @block-params.grep(*.named).map: |*.named_names;
     %params.grep({ %keys{ .key } });
 }
 
@@ -17,7 +17,7 @@ sub prepare-params(%params, %all-params --> Hash()) {
     }
 }
 
-sub prepare-param($value, %all-params) {
+sub prepare-param($value, %all-params) is export {
     do if $value ~~ Callable {
         my %cache;
         my %new-params = filter-params-for($value, %all-params);
