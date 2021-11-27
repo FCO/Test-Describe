@@ -57,7 +57,7 @@ class Test::Describe::Match::Change is Test::Describe::Match {
     method take-subs { take self.test, self.msg, self.hint; .take-subs with $.child }
 
     method !get-var-name {
-        my $val = &!value.();
+        my $val := &!value.();
         $val.VAR.?name // $val.&prepare-to-print
     }
 
