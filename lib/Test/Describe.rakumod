@@ -166,7 +166,7 @@ describe Int, {
 
 =head1 DESCRIPTION
 
-Test::Describe is ...
+Test::Describe is a RSpec like testing for Raku
 
 =head1 AUTHOR
 

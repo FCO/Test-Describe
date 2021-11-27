@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-      "Test"
+    "Test"
   ],
   "description": "RSpec like testing for raku",
   "license": "Artistic-2.0",
@@ -27,7 +27,7 @@
   ],
   "source-url": "https://github.com/FCO/Test-Describe.git",
   "tags": [
-      "testing"
+    "testing"
   ],
   "test-depends": [
   ],

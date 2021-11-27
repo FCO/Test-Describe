@@ -40,7 +40,7 @@ describe Int, {
 DESCRIPTION
 ===========
 
-Test::Describe is ...
+Test::Describe is a RSpec like testing for Raku
 
 AUTHOR
 ======
