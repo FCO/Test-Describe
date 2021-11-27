@@ -1,13 +1,14 @@
 {
   "auth": "cpan:fco",
   "authors": [
-    ""
+    "Fernando Correa de Oliveira <fernandocorrea@gmail.com>"
   ],
   "build-depends": [
   ],
   "depends": [
+      "Test"
   ],
-  "description": "blah blah blah",
+  "description": "RSpec like testing for raku",
   "license": "Artistic-2.0",
   "name": "Test::Describe",
   "perl": "6.d",
@@ -15,17 +16,18 @@
     "Test::Describe": "lib/Test/Describe.rakumod",
     "Test::Describe::Describe": "lib/Test/Describe/Describe.rakumod",
     "Test::Describe::Expect": "lib/Test/Describe/Expect.rakumod",
+    "Test::Describe::Helpers": "lib/Test/Describe/Helpers.rakumod",
     "Test::Describe::It": "lib/Test/Describe/It.rakumod",
     "Test::Describe::Match": "lib/Test/Describe/Match.rakumod",
     "Test::Describe::Match::Change": "lib/Test/Describe/Match/Change.rakumod",
     "Test::Describe::MatchFunctions": "lib/Test/Describe/MatchFunctions.rakumod",
-    "Test::Describe::Root": "lib/Test/Describe/Root.rakumod",
-    "Test::Describe::Helpers": "lib/Test/Describe/Helpers.rakumod"
+    "Test::Describe::Root": "lib/Test/Describe/Root.rakumod"
   },
   "resources": [
   ],
   "source-url": "https://github.com/FCO/Test-Describe.git",
   "tags": [
+      "testing"
   ],
   "test-depends": [
   ],
