@@ -11,12 +11,20 @@ class Test::Describe::Match::Change is Test::Describe::Match {
     has $!msg = "should changed";
     has $!obj;
 
-    multi method BUILD(:$value! is raw) {
-        &!value = sub () is rw { $value }
-    }
+    has Str $!var-name;
 
     multi method BUILD(:$value! is raw, Str :$attr!) {
-        &!value = sub () is rw { $value."$attr"() }
+        &!value := sub () is raw {
+            $!var-name = "{ $value.VAR.name }.{ $attr }";
+            $value."$attr"()
+        }
+    }
+
+    multi method BUILD(:$value! is raw) {
+        &!value := sub () is raw {
+            $!var-name = $value.VAR.name;
+            $value
+        }
     }
 
     method test {
@@ -57,8 +65,8 @@ class Test::Describe::Match::Change is Test::Describe::Match {
     method take-subs { take self.test, self.msg, self.hint; .take-subs with $.child }
 
     method !get-var-name {
-        my $val := &!value.();
-        $val.VAR.?name // $val.&prepare-to-print
+        my \val = &!value.();
+        $!var-name // val.&prepare-to-print
     }
 
     method from($from where not $!from.defined) {
