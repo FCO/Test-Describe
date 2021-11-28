@@ -1,17 +1,66 @@
 use Test::Describe;
 
-#describe "Parameters", {
-#    define counter => { class :: { has $.a = 0; method inc { $!a++ } }.new };
-#    it "does not reset inside the same it", -> :&counter {
-#        expect(counter.a).to: be 0;
-#        expect({ counter.inc }).to: change(counter, "a").from(0).to(1);
-#        expect({ counter.inc }).to: change(counter, "a").from(1).to(2);
-#        expect({ counter.inc }).to: change(counter, "a").from(2).to(3);
-#    }
-#    it "resets between different its", -> :&counter {
-#        expect(counter.a).to: be 0;
-#        expect({ counter.inc }).to: change(counter, "a").from(0).to(1);
-#        expect({ counter.inc }).to: change(counter, "a").from(1).to(2);
-#        expect({ counter.inc }).to: change(counter, "a").from(2).to(3);
-#    }
-#}
+class Counter {
+    has $.a = 0;
+    method inc { $!a++ }
+}
+
+describe "Parameters", {
+    context "param", {
+        define begin => 0;
+        define counter => { Counter.new: :a($:begin) };
+        it "does not reset inside the same it", -> :&counter {
+            expect(counter.a).to: be 0;
+            expect({ counter.inc }).to: change(counter, "a").from(0).to(1);
+            expect({ counter.inc }).to: change(counter, "a").from(1).to(2);
+            expect({ counter.inc }).to: change(counter, "a").from(2).to(3);
+        }
+
+        it "resets between different its", -> :&counter {
+            expect(counter.a).to: be 0;
+            expect({ counter.inc }).to: change(counter, "a").from(0).to(1);
+            expect({ counter.inc }).to: change(counter, "a").from(1).to(2);
+            expect({ counter.inc }).to: change(counter, "a").from(2).to(3);
+        }
+
+        it "change name", -> :counter(&c) {
+            expect(c.a).to: be 0;
+            expect({ c.inc }).to: change(c, "a").from(0).to(1);
+            expect({ c.inc }).to: change(c, "a").from(1).to(2);
+            expect({ c.inc }).to: change(c, "a").from(2).to(3);
+        }
+
+        it "many aliases", -> :a-counter(:counter(:count(:cou(:&c)))) {
+            expect(c.a).to: be 0;
+            expect({ c.inc }).to: change(c, "a").from(0).to(1);
+            expect({ c.inc }).to: change(c, "a").from(1).to(2);
+            expect({ c.inc }).to: change(c, "a").from(2).to(3);
+        }
+
+        context "replace param", {
+            define begin => 42;
+
+            it -> :&counter {
+                expect(counter.a).to: be 42;
+                expect({ counter.inc }).to: change(counter, "a").from(42).to(43);
+                expect({ counter.inc }).to: change(counter, "a").from(43).to(44);
+                expect({ counter.inc }).to: change(counter, "a").from(44).to(45);
+            }
+        }
+    }
+    context { Counter.new }, {
+        it "does not reset inside the same it", -> &counter {
+            expect(counter.a).to: be 0;
+            expect({ counter.inc }).to: change(counter, "a").from(0).to(1);
+            expect({ counter.inc }).to: change(counter, "a").from(1).to(2);
+            expect({ counter.inc }).to: change(counter, "a").from(2).to(3);
+        }
+
+        it "resets between different its", -> &counter {
+            expect(counter.a).to: be 0;
+            expect({ counter.inc }).to: change(counter, "a").from(0).to(1);
+            expect({ counter.inc }).to: change(counter, "a").from(1).to(2);
+            expect({ counter.inc }).to: change(counter, "a").from(2).to(3);
+        }
+    }
+}
