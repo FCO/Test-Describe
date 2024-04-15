@@ -129,7 +129,7 @@ sub EXPORT(--> Map()) {
 
 =head1 NAME
 
-Test::Describe - blah blah blah
+Test::Describe - a RSpec like testing for Raku
 
 =head1 SYNOPSIS
 
