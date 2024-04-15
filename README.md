@@ -3,7 +3,7 @@
 NAME
 ====
 
-Test::Describe - blah blah blah
+Test::Describe - a RSpec like testing for Raku
 
 SYNOPSIS
 ========
